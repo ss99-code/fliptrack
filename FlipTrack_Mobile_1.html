@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a0a0a">
+<title>FlipTrack – AA Thrift</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#111213;--surface:#1c1c1e;--s2:#252527;--border:#3a2a2a;
+  --accent:#A01020;--accent-light:#c41428;--accent-dim:rgba(160,16,32,.15);
+  --accent2:#e8c060;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444;
+  --text:#f0eded;--muted:#9a8a8a;--r:14px;
+  --nav-h:56px;--bot-h:64px;--safe-bot:env(safe-area-inset-bottom,0px)
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+
+/* TOP NAV */
+.top-nav{background:linear-gradient(135deg,#1a0a0a 0%,#1c1c1e 60%,#1a0808 100%);border-bottom:2px solid var(--accent);height:var(--nav-h);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 2px 20px rgba(160,16,32,.3);position:relative;z-index:50}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-brand-name{font-size:1rem;font-weight:700;color:#fff;letter-spacing:.5px;line-height:1.1}
+.nav-brand-sub{font-size:.6rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.settings-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:.82rem;min-height:40px;min-width:40px;display:flex;align-items:center;justify-content:center}
+.settings-btn:active{background:var(--accent-dim);border-color:var(--accent)}
+
+/* SCROLL + BOTTOM NAV */
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 14px calc(var(--bot-h) + var(--safe-bot) + 14px);-webkit-overflow-scrolling:touch}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--bot-h) + var(--safe-bot));background:linear-gradient(180deg,#1a0a0a 0%,#111213 100%);border-top:2px solid var(--accent);display:flex;align-items:flex-start;padding-top:4px;z-index:100;box-shadow:0 -2px 20px rgba(160,16,32,.25)}
+.bot-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;cursor:pointer;background:none;border:none;color:var(--muted);transition:color .15s;min-height:52px}
+.bot-tab .bt-icon{font-size:1.4rem;line-height:1}
+.bot-tab .bt-label{font-size:.62rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.bot-tab.active{color:var(--accent)}
+.bot-tab:active{background:var(--accent-dim)}
+
+/* PAGES */
+.page{display:none}.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.card-title{font-size:.95rem;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.step-badge{background:var(--accent);color:#fff;border-radius:50%;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;box-shadow:0 2px 8px rgba(160,16,32,.4)}
+
+/* FORMS */
+label{font-size:.82rem;color:var(--muted);font-weight:500;display:block;margin-bottom:5px;margin-top:14px}
+label:first-child{margin-top:0}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:12px 14px;font-size:16px;outline:none;transition:border .15s;font-family:inherit;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239a8a8a' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+select option{background:#1c1c1e}
+
+/* CHECKBOX */
+.checkbox-wrap{display:flex;align-items:center;gap:12px;margin-top:6px;padding:13px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;cursor:pointer;min-height:48px}
+.checkbox-wrap input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+.checkbox-wrap span{font-size:.88rem;color:var(--text);user-select:none;line-height:1.3}
+.checkbox-wrap.checked{border-color:var(--accent);background:var(--accent-dim)}
+
+/* BUTTONS */
+.btn{padding:13px 18px;border-radius:10px;border:none;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(160,16,32,.35)}
+.btn-primary:active{background:var(--accent-light);transform:scale(.98)}
+.btn-primary:disabled{background:var(--s2);color:var(--muted);cursor:not-allowed;box-shadow:none}
+.btn-secondary{background:var(--s2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:active{border-color:var(--accent)}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:active{background:#16a34a}
+.btn-full{width:100%}
+.btn-row{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+
+/* PHOTO */
+.photo-thumb-row{display:flex;align-items:center;gap:12px;width:100%;margin-bottom:12px}
+.photo-thumb{width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--accent);cursor:zoom-in;flex-shrink:0}
+.photo-thumb-info{flex:1}
+.photo-thumb-info p{font-size:.82rem;font-weight:600;color:var(--text)}
+.photo-thumb-info span{font-size:.75rem;color:var(--muted)}
+.remove-photo-btn{background:var(--accent);border:none;color:#fff;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;min-width:32px}
+
+/* AI OVERLAY */
+.ai-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:32px;text-align:center}
+.ai-overlay.open{display:flex}
+.ai-overlay-icon{font-size:2.8rem}
+.ai-overlay-title{font-size:1.1rem;font-weight:700;color:#fff}
+.ai-overlay-sub{font-size:.85rem;color:var(--muted);line-height:1.55;max-width:300px}
+.ai-progress{width:100%;max-width:280px;height:4px;background:var(--border);border-radius:99px;overflow:hidden}
+.ai-progress-bar{height:100%;background:var(--accent);border-radius:99px;animation:progani 3s ease-in-out infinite}
+@keyframes progani{0%{width:5%}60%{width:80%}100%{width:95%}}
+.ai-cancel-btn{background:var(--s2);border:1px solid var(--border);color:var(--muted);padding:10px 22px;border-radius:10px;cursor:pointer;font-size:.85rem;font-weight:600;margin-top:4px}
+.ai-cancel-btn:active{border-color:var(--accent);color:var(--text)}
+
+/* CONFIDENCE */
+.conf-row{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px}
+.conf-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.conf-high .conf-dot{background:var(--green)}.conf-medium .conf-dot{background:var(--yellow)}.conf-low .conf-dot{background:var(--red)}
+.conf-text strong{display:block;font-size:.82rem;color:var(--text);margin-bottom:2px}
+.conf-text span{font-size:.76rem;color:var(--muted);line-height:1.4}
+
+/* HINTS & SECTIONS */
+.edit-hint{font-size:.78rem;color:var(--muted);margin-bottom:14px;padding:10px 14px;background:var(--accent-dim);border-radius:10px;border-left:3px solid var(--accent);line-height:1.5}
+.section-lbl{font-size:.75rem;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 4px;padding-top:16px;border-top:1px solid var(--border)}
+.section-lbl:first-child{margin-top:0;padding-top:0;border-top:none}
+
+/* AI OUTPUT */
+.ai-label{font-size:.75rem;color:var(--accent-light);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:16px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.ai-box{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:.88rem;line-height:1.65;white-space:pre-wrap;color:var(--text)}
+.copy-btn{background:var(--s2);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:.75rem;padding:6px 12px;border-radius:8px;min-height:36px;font-weight:600;flex-shrink:0}
+.copy-btn:active{background:var(--accent-dim);color:var(--text);border-color:var(--accent)}
+.desc-editable{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:15px;line-height:1.65;color:var(--text);font-family:inherit;min-height:200px;resize:none;outline:none;transition:border .15s}
+.desc-editable:focus{border-color:var(--accent)}
+.desc-note{font-size:.73rem;color:var(--muted);margin-top:6px;line-height:1.4}
+
+/* EBAY LINK */
+.ebay-link{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--s2);border:1px solid #b8902a;border-radius:10px;margin-top:10px;text-decoration:none}
+.ebay-link:active{background:rgba(184,144,42,.15)}
+.ebay-link-text{flex:1}
+.ebay-link-text strong{display:block;font-size:.82rem;color:var(--accent2)}
+.ebay-link-text span{font-size:.73rem;color:var(--muted)}
+
+/* FULLSCREEN EDITOR */
+.fse{display:none;position:fixed;inset:0;background:var(--bg);z-index:400;flex-direction:column}
+.fse.open{display:flex}
+.fse-header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.fse-title{font-size:.95rem;font-weight:600;flex:1}
+.fse-done{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:8px 18px;font-size:.88rem;font-weight:600;cursor:pointer;min-height:40px}
+.fse-textarea{flex:1;background:var(--bg);border:none;color:var(--text);font-family:inherit;font-size:15px;line-height:1.7;padding:16px;resize:none;outline:none;width:100%}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-unlisted::before{background:var(--yellow)}.stat-listed::before{background:var(--accent)}
+.stat-sold::before{background:var(--green)}.stat-profit::before{background:var(--accent2)}
+.stat-card .val{font-size:1.6rem;font-weight:700;margin-bottom:2px}
+.stat-card .lbl{font-size:.72rem;color:var(--muted)}
+.stat-unlisted .val{color:var(--yellow)}.stat-listed .val{color:#e05060}
+.stat-sold .val{color:var(--green)}.stat-profit .val{color:var(--accent2)}
+
+/* INVENTORY */
+.inv-controls{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.inv-filter-row{display:flex;gap:8px}.inv-filter-row select{flex:1}
+.inv-btn-row{display:flex;gap:8px}.inv-btn-row .btn{flex:1}
+
+/* ITEM CARDS */
+.item-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.item-card-desc{font-size:.9rem;font-weight:600;color:var(--text);line-height:1.35;margin-bottom:6px;word-break:break-word}
+.item-card-meta{font-size:.75rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.item-card-bottom{border-top:1px solid var(--border);padding-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.item-money{display:flex;gap:14px}
+.money-item{text-align:center}
+.money-item .m-val{font-size:.88rem;font-weight:700;color:var(--text)}
+.money-item .m-lbl{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.profit-pos{color:var(--green)!important}.profit-neg{color:var(--red)!important}
+.quick-actions{display:flex;gap:6px;flex-shrink:0}
+.qa-btn{border:none;border-radius:8px;padding:7px 10px;font-size:.72rem;font-weight:700;cursor:pointer;min-height:34px;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.qa-listed{background:rgba(160,16,32,.15);color:#e05060;border:1px solid rgba(160,16,32,.3)}
+.qa-listed:active{background:var(--accent);color:#fff}
+.qa-sold{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.qa-sold:active{background:var(--green);color:#fff}
+.qa-edit{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+.qa-edit:active{border-color:var(--accent);color:var(--text)}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700}
+.badge-listed{background:rgba(160,16,32,.15);color:#e05060}
+.badge-unlisted{background:rgba(245,158,11,.15);color:var(--yellow)}
+.badge-sold{background:rgba(34,197,94,.15);color:var(--green)}
+.lot-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:.7rem;font-weight:600;background:rgba(232,192,96,.15);color:var(--accent2)}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--accent);border-radius:20px 20px 0 0;padding:20px 18px;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:calc(20px + var(--safe-bot))}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 18px}
+.modal h3{font-size:1rem;margin-bottom:16px;color:#fff;display:flex;align-items:center;gap:8px}
+.modal-section{font-size:.75rem;font-weight:700;color:var(--accent-light);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px;padding-top:14px;border-top:1px solid var(--border)}
+.modal-footer{display:flex;flex-direction:column;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.api-dot,.sheets-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.api-dot.ok,.sheets-dot.ok{background:var(--green)}.api-dot.missing,.sheets-dot.missing{background:var(--red)}
+.sold-item-name{font-size:.88rem;font-weight:600;color:var(--text);padding:10px 14px;background:var(--s2);border-radius:10px;border-left:3px solid var(--green);margin-bottom:4px;line-height:1.4}
+.calc-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.calc-note{font-size:.72rem;color:var(--muted);margin-top:6px;line-height:1.4}
+
+/* MISC */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sync-status{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.sync-status.error{color:var(--red)}.sync-status.ok{color:var(--green)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .big{font-size:2.6rem;margin-bottom:10px}
+.empty-state p{font-size:.88rem;line-height:1.5}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:500;align-items:center;justify-content:center}
+.lightbox.open{display:flex}
+.lightbox img{max-width:100vw;max-height:100vh;object-fit:contain}
+.lightbox-close{position:fixed;top:16px;right:16px;margin-top:env(safe-area-inset-top,0px);background:var(--accent);border:none;color:#fff;border-radius:50%;width:44px;height:44px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close">✕</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<!-- AI OVERLAY — shown during identify + generate -->
+<div class="ai-overlay" id="ai-overlay">
+  <div class="ai-overlay-icon" id="ai-icon">🔍</div>
+  <div class="ai-overlay-title" id="ai-title">Identifying item...</div>
+  <div class="ai-overlay-sub" id="ai-sub">Analyzing your photo for brand, model, and condition details</div>
+  <div class="ai-progress"><div class="ai-progress-bar"></div></div>
+  <button class="ai-cancel-btn" onclick="cancelAI()">Cancel</button>
+</div>
+
+<!-- FULLSCREEN DESCRIPTION EDITOR -->
+<div class="fse" id="fse">
+  <div class="fse-header">
+    <span class="fse-title">✏️ Edit Description</span>
+    <button class="fse-done" onclick="closeFSE()">Done ✓</button>
+  </div>
+  <textarea class="fse-textarea" id="fse-textarea" spellcheck="true"></textarea>
+</div>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="nav-logo">
+    <svg viewBox="0 0 200 200" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="100" r="97" fill="#8b1020"/>
+      <circle cx="100" cy="100" r="90" fill="#111"/>
+      <circle cx="100" cy="100" r="83" fill="none" stroke="#8b1020" stroke-width="1.5"/>
+      <line x1="28" y1="118" x2="172" y2="118" stroke="#b8902a" stroke-width="1"/>
+      <text x="96" y="113" font-family="'Brush Script MT','Segoe Script',cursive" font-size="82" font-style="italic" fill="#f5f5f5" text-anchor="middle" letter-spacing="-8">AA</text>
+      <text x="100" y="136" font-family="Georgia,'Times New Roman',serif" font-size="11" font-weight="700" fill="#b8902a" text-anchor="middle" letter-spacing="5">THRIFT</text>
+      <text x="100" y="150" font-family="Georgia,'Times New Roman',serif" font-size="8.5" fill="#777" text-anchor="middle" letter-spacing="3">&amp; MORE</text>
+    </svg>
+    <div><div class="nav-brand-name">FlipTrack</div><div class="nav-brand-sub">AA Thrift &amp; More</div></div>
+  </div>
+  <button class="settings-btn" onclick="openSettings()">⚙️</button>
+</nav>
+
+<div class="scroll-area" id="scroll-area">
+
+<!-- ═══════════ NEW LISTING PAGE ═══════════ -->
+<div class="page active" id="page-list">
+
+  <div class="card">
+    <div class="card-title"><span class="step-badge">1</span> Take or Upload a Photo</div>
+    <div id="photo-thumb-area" style="display:none">
+      <div class="photo-thumb-row">
+        <img id="photo-thumb" class="photo-thumb" src="" alt="" onclick="openLightbox()">
+        <div class="photo-thumb-info"><p>📸 Photo loaded</p><span>Tap to zoom</span></div>
+        <button class="remove-photo-btn" onclick="removePhoto()">✕</button>
+      </div>
+    </div>
+    <div id="photo-btn-area" style="display:flex;flex-direction:column;gap:10px">
+      <label for="photo-camera" class="btn btn-primary btn-full" style="cursor:pointer">📷 Take a Photo</label>
+      <label for="photo-gallery" class="btn btn-secondary btn-full" style="cursor:pointer">🖼️ Choose from Gallery</label>
+    </div>
+    <input type="file" id="photo-camera" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoSelect(event)">
+    <input type="file" id="photo-gallery" accept="image/*" style="display:none" onchange="handlePhotoSelect(event)">
+  </div>
+
+  <div class="card" id="details-card" style="display:none">
+    <div class="card-title"><span class="step-badge">2</span> Review &amp; Correct Details</div>
+    <div class="conf-row" id="conf-row">
+      <div class="conf-dot"></div>
+      <div class="conf-text"><strong id="conf-title">AI identified this item</strong><span id="conf-sub">Review fields below and correct anything wrong.</span></div>
+    </div>
+    <div class="edit-hint">✏️ The more accurate these fields are, the better your listing will be. Fix anything the AI got wrong before generating.</div>
+
+    <div class="section-lbl">Item Info</div>
+    <label>Item Description (eBay Title)</label>
+    <input type="text" id="f-name" placeholder="e.g. Boss DM-2W Waza Craft Analog Delay" autocapitalize="words">
+    <label>Brand</label><input type="text" id="f-brand" placeholder="e.g. Boss, Vera Bradley, LEGO" autocapitalize="words">
+    <label>Model / Version</label><input type="text" id="f-model" placeholder="e.g. DM-2W, First Run">
+    <label>Era / Year</label><input type="text" id="f-era" placeholder="e.g. 2014, Vintage 1980s">
+    <label>Key Features</label><input type="text" id="f-features" placeholder="e.g. analog delay, bucket brigade, dual mode">
+    <label>AI Notes <span style="color:var(--muted);font-weight:400">(editable)</span></label>
+    <textarea id="f-airaw" style="min-height:70px;font-size:14px"></textarea>
+
+    <div class="section-lbl">Inventory Details</div>
+    <label>Item Type</label>
+    <select id="f-itemtype"><option value="">— Select —</option><option>Art &amp; Docs</option><option>Books</option><option>Clothes &amp; Shoes</option><option>Collectible</option><option>Crafts</option><option>Electronics</option><option>Furniture</option><option>Household General</option><option>Household Decor</option><option>Household Outdoor</option><option>Household Kitchen</option><option>Jewelry &amp; Watches</option><option>Music &amp; Movies</option><option>Outdoors &amp; Sports</option><option>Pets</option><option>Purses &amp; Bags</option><option>Tools</option><option>Toys &amp; Games</option><option>Video Games</option><option>Musical Instruments</option><option>Arts &amp; Crafts</option><option>Automotive</option><option>Health &amp; Beauty</option><option>Rocks</option><option>Other</option></select>
+    <label>Sourced From</label>
+    <select id="f-source"><option value="">— Select —</option><option>Personal</option><option>GS Garage Sale</option><option>ES Estate Sale</option><option>Bins Goodwill</option><option>Gift</option><option>Retail Store</option></select>
+    <label>Date Acquired</label><input type="date" id="f-dateacquired">
+    <label>Cost Type</label>
+    <select id="f-costtype"><option value="">— Select —</option><option>Actual Cost</option><option>FMV</option><option>GFE</option></select>
+    <label>Cost Basis ($)</label><input type="number" id="f-cost" placeholder="0.00" min="0" step="0.01" inputmode="decimal">
+    <label>Starting List Price ($)</label><input type="number" id="f-listprice" placeholder="0.00" min="0" step="0.01" inputmode="decimal">
+    <label>Condition</label>
+    <select id="f-condition"><option value="">— Select —</option><option>New with tags (NWT)</option><option>New without tags (NWOT)</option><option>Like new / Open box</option><option>Very good – minor wear</option><option>Good – moderate wear</option><option>Acceptable – heavy wear</option><option>For parts / not working</option></select>
+    <label>Part of a Lot?</label>
+    <label class="checkbox-wrap" id="f-lot-wrap" onclick="toggleCheckbox('f-lot','f-lot-wrap')"><input type="checkbox" id="f-lot"><span>This item is lotted with another item</span></label>
+    <label>Additional Notes</label>
+    <textarea id="f-notes" style="min-height:56px;font-size:14px" placeholder="e.g. includes original box, tested and working"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-full" id="gen-btn" onclick="generateListing(false)">✨ Generate My Listing</button>
+      <button class="btn btn-secondary btn-full" onclick="clearAll()">🗑️ Start Over</button>
+    </div>
+  </div>
+
+  <div class="card" id="listing-card" style="display:none">
+    <div class="card-title"><span class="step-badge">3</span> Your Listing — Ready to Copy</div>
+
+    <div class="ai-label">eBay Title <button class="copy-btn" onclick="copyField('out-title',this)">📋 Copy</button></div>
+    <div class="ai-box" id="out-title"></div>
+
+    <div class="ai-label">Description
+      <div style="display:flex;gap:6px">
+        <button class="copy-btn" onclick="copyDesc(this)">📋 Copy</button>
+        <button class="copy-btn" style="color:var(--accent-light);border-color:var(--accent)" onclick="openFSE()">⛶ Full Screen</button>
+      </div>
+    </div>
+    <textarea class="desc-editable" id="out-desc" spellcheck="true"></textarea>
+    <div class="desc-note">💡 Tap <strong>Full Screen</strong> for easier editing. Changes save when you tap "Save to Inventory."</div>
+
+    <div class="ai-label">Pricing Suggestion <button class="copy-btn" onclick="copyField('out-price',this)">📋 Copy</button></div>
+    <div class="ai-box" id="out-price"></div>
+
+    <a id="ebay-search-link" href="#" target="_blank" class="ebay-link">
+      <span style="font-size:1.1rem">🔍</span>
+      <span class="ebay-link-text">
+        <strong>Check eBay Sold Listings</strong>
+        <span id="ebay-search-label">See what this item actually sold for</span>
+      </span>
+      <span style="color:var(--muted)">→</span>
+    </a>
+
+    <div class="btn-row">
+      <button class="btn btn-success btn-full" onclick="saveToInventory()">💾 Save to Inventory</button>
+      <button class="btn btn-secondary btn-full" onclick="generateListing(false)">🔄 Regenerate</button>
+      <button class="btn btn-secondary btn-full" onclick="clearAll()">🗑️ Start Over</button>
+    </div>
+  </div>
+
+</div><!-- /page-list -->
+
+<!-- ═══════════ INVENTORY PAGE ═══════════ -->
+<div class="page" id="page-inventory">
+  <div class="stats-row">
+    <div class="stat-card stat-unlisted"><div class="val" id="stat-unlisted">0</div><div class="lbl">Unlisted</div></div>
+    <div class="stat-card stat-listed"><div class="val" id="stat-listed">0</div><div class="lbl">Listed</div></div>
+    <div class="stat-card stat-sold"><div class="val" id="stat-sold">0</div><div class="lbl">Sold</div></div>
+    <div class="stat-card stat-profit"><div class="val" id="stat-profit">$0</div><div class="lbl">Total Profit</div></div>
+  </div>
+  <div class="card">
+    <div class="inv-controls">
+      <input type="text" id="search-inv" placeholder="🔍 Search items..." oninput="renderInventory()" style="margin-top:0">
+      <div class="inv-filter-row">
+        <select id="filter-status" onchange="renderInventory()"><option value="">All Statuses</option><option>Unlisted</option><option>Listed</option><option>Sold</option></select>
+        <select id="filter-type" onchange="renderInventory()"><option value="">All Types</option><option>Art &amp; Docs</option><option>Books</option><option>Clothes &amp; Shoes</option><option>Collectible</option><option>Crafts</option><option>Electronics</option><option>Furniture</option><option>Household General</option><option>Household Decor</option><option>Household Outdoor</option><option>Household Kitchen</option><option>Jewelry &amp; Watches</option><option>Music &amp; Movies</option><option>Outdoors &amp; Sports</option><option>Pets</option><option>Purses &amp; Bags</option><option>Tools</option><option>Toys &amp; Games</option><option>Video Games</option><option>Musical Instruments</option><option>Arts &amp; Crafts</option><option>Automotive</option><option>Health &amp; Beauty</option><option>Rocks</option><option>Other</option></select>
+      </div>
+      <div class="inv-btn-row">
+        <button class="btn btn-primary" onclick="openAddModal()">+ Add Item</button>
+        <button class="btn btn-secondary" onclick="loadFromSheets()">🔄 Refresh</button>
+      </div>
+    </div>
+    <div class="sync-status" id="sync-status"></div>
+    <div id="inv-list"></div>
+    <div class="empty-state" id="inv-empty" style="display:none">
+      <div class="big">📦</div>
+      <p>No items found.<br>Use <strong>New Listing</strong> or <strong>+ Add Item</strong> to get started!</p>
+    </div>
+  </div>
+</div><!-- /page-inventory -->
+
+</div><!-- /scroll-area -->
+
+<nav class="bottom-nav">
+  <button class="bot-tab active" id="tab-list" onclick="showPage('list',this)">
+    <span class="bt-icon">✍️</span><span class="bt-label">New Listing</span>
+  </button>
+  <button class="bot-tab" id="tab-inventory" onclick="showPage('inventory',this)">
+    <span class="bt-icon">📦</span><span class="bt-label">Inventory</span>
+  </button>
+</nav>
+
+<!-- ═══════════ SETTINGS MODAL ═══════════ -->
+<div class="modal-overlay" id="settings-modal" onclick="handleOverlayClick(event,'settings-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>⚙️ Settings</h3>
+    <label>Anthropic API Key <span id="api-dot" class="api-dot missing"></span></label>
+    <input type="text" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+    <p style="font-size:.75rem;color:var(--muted);margin-top:6px">Get one at <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent-light)">console.anthropic.com</a></p>
+    <label style="margin-top:16px">Google Sheets Script URL <span id="sheets-dot" class="sheets-dot missing"></span></label>
+    <input type="text" id="sheets-url-input" placeholder="https://script.google.com/macros/s/.../exec" autocorrect="off" autocapitalize="none">
+    <label style="margin-top:16px">Sheet Secret Key <span id="sheetkey-dot" class="api-dot missing"></span></label>
+    <input type="text" id="sheets-key-input" placeholder="e.g. ft-k9x2mQ7vLpR4nZw8dYcT3hJbA6eUoN1" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+    <p style="font-size:.75rem;color:var(--muted);margin-top:6px">Must match <code style="background:var(--s2);padding:2px 6px;border-radius:4px">SECRET_KEY</code> in your Apps Script.</p>
+    <label style="margin-top:16px">Default Source <span style="color:var(--muted);font-weight:400">(pre-fills every new item)</span></label>
+    <select id="pref-source"><option value="">— None —</option><option>Personal</option><option>GS Garage Sale</option><option>ES Estate Sale</option><option>Bins Goodwill</option><option>Gift</option><option>Retail Store</option></select>
+    <label style="margin-top:16px">Default Cost Type</label>
+    <select id="pref-costtype"><option value="">— None —</option><option>Actual Cost</option><option>FMV</option><option>GFE</option></select>
+    <label style="margin-top:16px">Additional Listing Preferences</label>
+    <textarea id="pref-tone" style="min-height:60px;font-size:14px" placeholder="e.g. Always mention fast shipping. Include dimensions when possible."></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-full" onclick="saveSettings()">Save Settings</button>
+      <button class="btn btn-secondary btn-full" onclick="closeModal('settings-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ EDIT / ADD MODAL ═══════════ -->
+<div class="modal-overlay" id="edit-modal" onclick="handleOverlayClick(event,'edit-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="edit-modal-title">Edit Item</h3>
+    <input type="hidden" id="edit-origdesc">
+    <div class="modal-section">Item Info</div>
+    <label>Item Description</label><input type="text" id="edit-desc" autocapitalize="words">
+    <label>Item Number (eBay)</label><input type="text" id="edit-itemnum" placeholder="Assigned by eBay after listing">
+    <label>Item Type</label>
+    <select id="edit-itemtype"><option value="">— Select —</option><option>Art &amp; Docs</option><option>Books</option><option>Clothes &amp; Shoes</option><option>Collectible</option><option>Crafts</option><option>Electronics</option><option>Furniture</option><option>Household General</option><option>Household Decor</option><option>Household Outdoor</option><option>Household Kitchen</option><option>Jewelry &amp; Watches</option><option>Music &amp; Movies</option><option>Outdoors &amp; Sports</option><option>Pets</option><option>Purses &amp; Bags</option><option>Tools</option><option>Toys &amp; Games</option><option>Video Games</option><option>Musical Instruments</option><option>Arts &amp; Crafts</option><option>Automotive</option><option>Health &amp; Beauty</option><option>Rocks</option><option>Other</option></select>
+    <label>Status</label>
+    <select id="edit-status"><option>Unlisted</option><option>Listed</option><option>Sold</option></select>
+    <label>Part of a Lot?</label>
+    <label class="checkbox-wrap" id="edit-lot-wrap" onclick="toggleCheckbox('edit-lot','edit-lot-wrap')"><input type="checkbox" id="edit-lot"><span>This item is lotted with another item</span></label>
+    <label>Platform</label>
+    <select id="edit-platform"><option value="">— Select —</option><option>eBay</option><option>Poshmark</option><option>Whatnot</option><option>Facebook MP</option><option>Other</option></select>
+    <div class="modal-section">Sourcing</div>
+    <label>Date Acquired</label><input type="date" id="edit-dateacquired">
+    <label>Sourced From</label>
+    <select id="edit-source"><option value="">— Select —</option><option>Personal</option><option>GS Garage Sale</option><option>ES Estate Sale</option><option>Bins Goodwill</option><option>Gift</option><option>Retail Store</option></select>
+    <label>Cost Type</label>
+    <select id="edit-costtype"><option value="">— Select —</option><option>Actual Cost</option><option>FMV</option><option>GFE</option></select>
+    <label>Cost Basis ($)</label><input type="number" id="edit-cost" min="0" step="0.01" inputmode="decimal" oninput="calcProfit()">
+    <label>Starting List Date</label><input type="date" id="edit-startlistdate">
+    <label>Starting List Price ($)</label><input type="number" id="edit-startlistprice" min="0" step="0.01" inputmode="decimal">
+    <label>Current List Price ($)</label><input type="number" id="edit-currentprice" min="0" step="0.01" inputmode="decimal">
+    <div class="modal-section">Sale Details</div>
+    <label>Sold Date</label><input type="date" id="edit-solddate">
+    <label>Order Number</label><input type="text" id="edit-ordernum">
+    <label>Subtotal ($)</label><input type="number" id="edit-subtotal" min="0" step="0.01" inputmode="decimal" oninput="calcProfit()">
+    <label>Shipping Charged ($)</label><input type="number" id="edit-shipchrg" min="0" step="0.01" inputmode="decimal" oninput="calcProfit()">
+    <label>Shipping Actual ($)</label><input type="number" id="edit-shipact" min="0" step="0.01" inputmode="decimal" oninput="calcProfit()">
+    <label>Buyer's Tax ($)</label><input type="number" id="edit-tax" min="0" step="0.01" inputmode="decimal" oninput="calcProfit()">
+    <label>Fees ($)</label><input type="number" id="edit-fees" min="0" step="0.01" inputmode="decimal" oninput="calcProfit()">
+    <div class="calc-row">
+      <div><label>Sold Total</label><input type="text" id="calc-soldtotal" readonly style="background:var(--bg);color:var(--green);font-weight:600;font-size:14px"></div>
+      <div><label>Gross Rev.</label><input type="text" id="calc-gross" readonly style="background:var(--bg);color:var(--green);font-weight:600;font-size:14px"></div>
+      <div><label>Est. Profit</label><input type="text" id="calc-profit" readonly style="background:var(--bg);font-weight:700;font-size:14px"></div>
+    </div>
+    <p class="calc-note">ℹ️ Final values are calculated by your Google Sheet formulas.</p>
+    <div class="modal-section">Shipping</div>
+    <label>Shipping Service</label>
+    <select id="edit-shipservice"><option value="">— Select —</option><option>USPS GA</option><option>UPS</option><option>FedEx</option><option>NA</option></select>
+    <label>Tracking Number</label><input type="text" id="edit-tracking" inputmode="numeric">
+    <div class="modal-section">Notes</div>
+    <textarea id="edit-notes" style="min-height:60px;font-size:14px"></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-full" id="edit-save-btn" onclick="saveEditModal()">Save to Sheet</button>
+      <button class="btn btn-secondary btn-full" onclick="closeModal('edit-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MARK AS SOLD MODAL ═══════════ -->
+<div class="modal-overlay" id="sold-modal" onclick="handleOverlayClick(event,'sold-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>💚 Mark as Sold</h3>
+    <input type="hidden" id="sold-origdesc">
+    <div class="sold-item-name" id="sold-item-name"></div>
+    <label style="margin-top:14px">Sold Date</label><input type="date" id="sold-date">
+    <label>Order Number</label><input type="text" id="sold-ordernum">
+    <label>Subtotal ($) <span style="color:var(--muted);font-weight:400">— item price before shipping/tax</span></label>
+    <input type="number" id="sold-subtotal" min="0" step="0.01" inputmode="decimal" oninput="calcSoldProfit()">
+    <label>Shipping Charged to Buyer ($)</label>
+    <input type="number" id="sold-shipchrg" min="0" step="0.01" inputmode="decimal" oninput="calcSoldProfit()">
+    <label>Your Actual Shipping Cost ($)</label>
+    <input type="number" id="sold-shipact" min="0" step="0.01" inputmode="decimal" oninput="calcSoldProfit()">
+    <label>eBay Fees ($)</label>
+    <input type="number" id="sold-fees" min="0" step="0.01" inputmode="decimal" oninput="calcSoldProfit()">
+    <label>Buyer's Tax ($)</label>
+    <input type="number" id="sold-tax" min="0" step="0.01" inputmode="decimal">
+    <label>Shipping Service</label>
+    <select id="sold-shipservice"><option value="">— Select —</option><option>USPS GA</option><option>UPS</option><option>FedEx</option><option>NA</option></select>
+    <label>Tracking Number</label><input type="text" id="sold-tracking" inputmode="numeric">
+    <label>Platform</label>
+    <select id="sold-platform"><option value="">—</option><option>eBay</option><option>Poshmark</option><option>Whatnot</option><option>Facebook MP</option><option>Other</option></select>
+    <div class="calc-row" style="margin-top:14px">
+      <div><label>Gross Rev.</label><input type="text" id="sold-calc-gross" readonly style="background:var(--bg);color:var(--green);font-weight:600;font-size:14px"></div>
+      <div><label>Est. Profit</label><input type="text" id="sold-calc-profit" readonly style="background:var(--bg);font-weight:700;font-size:14px"></div>
+      <div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success btn-full" id="sold-save-btn" onclick="saveSoldModal()">✅ Save Sale</button>
+      <button class="btn btn-secondary btn-full" onclick="closeModal('sold-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var inventory=[];
+var settings=JSON.parse(localStorage.getItem('fliptrack_settings')||'{}');
+var currentPhotoBase64=null;var currentPhotoMime='image/jpeg';
+var currentListing=null;var aiCancelled=false;
+var ITEM_TYPES=['Art & Docs','Books','Clothes & Shoes','Collectible','Crafts','Electronics','Furniture','Household General','Household Decor','Household Outdoor','Household Kitchen','Jewelry & Watches','Music & Movies','Outdoors & Sports','Pets','Purses & Bags','Tools','Toys & Games','Video Games','Musical Instruments','Arts & Crafts','Automotive','Health & Beauty','Rocks','Other'];
+
+function handleOverlayClick(e,id){if(e.target.classList.contains('modal-overlay'))closeModal(id);}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){['settings-modal','edit-modal','sold-modal'].forEach(closeModal);closeLightbox();if(document.getElementById('fse').classList.contains('open'))closeFSE();}});
+
+function toggleCheckbox(a,b){var c=document.getElementById(a);c.checked=!c.checked;document.getElementById(b).classList.toggle('checked',c.checked);}
+function setCheckbox(a,b,v){var c=document.getElementById(a);c.checked=(v===true||v==='TRUE'||v==='true');document.getElementById(b).classList.toggle('checked',c.checked);}
+
+function calcProfit(){
+  var sub=pf('edit-subtotal'),sc=pf('edit-shipchrg'),sa=pf('edit-shipact'),tax=pf('edit-tax'),fees=pf('edit-fees'),cost=pf('edit-cost');
+  var gross=sub+sc;var profit=gross-fees-sa-cost;
+  sv('calc-soldtotal','$'+(sub+sc+tax).toFixed(2));sv('calc-gross','$'+gross.toFixed(2));
+  var pe=document.getElementById('calc-profit');pe.value='$'+profit.toFixed(2);pe.style.color=profit>=0?'var(--green)':'var(--red)';
+}
+function calcSoldProfit(){
+  var sub=pf('sold-subtotal'),sc=pf('sold-shipchrg'),sa=pf('sold-shipact'),fees=pf('sold-fees');
+  var origDesc=document.getElementById('sold-origdesc').value;
+  var item=inventory.find(function(i){return i['Item Description']===origDesc;})||{};
+  var cost=parseFloat(item['Cost Basis'])||0;
+  var gross=sub+sc;var profit=gross-fees-sa-cost;
+  sv('sold-calc-gross','$'+gross.toFixed(2));
+  var pe=document.getElementById('sold-calc-profit');pe.value='$'+profit.toFixed(2);pe.style.color=profit>=0?'var(--green)':'var(--red)';
+}
+function pf(id){return parseFloat(document.getElementById(id).value)||0;}
+function sv(id,v){document.getElementById(id).value=v;}
+function gv(id){return document.getElementById(id).value;}
+
+function openLightbox(){document.getElementById('lightbox-img').src=document.getElementById('photo-thumb').src;document.getElementById('lightbox').classList.add('open');}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
+
+function openFSE(){document.getElementById('fse-textarea').value=gv('out-desc');document.getElementById('fse').classList.add('open');setTimeout(function(){document.getElementById('fse-textarea').focus();},80);}
+function closeFSE(){document.getElementById('out-desc').value=gv('fse-textarea');document.getElementById('fse').classList.remove('open');}
+
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.bot-tab').forEach(function(t){t.classList.remove('active')});
+  document.getElementById('page-'+id).classList.add('active');btn.classList.add('active');
+  document.getElementById('scroll-area').scrollTop=0;
+  if(id==='inventory')loadFromSheets();
+}
+
+function openSettings(){
+  sv('api-key-input',settings.apiKey||'');sv('sheets-url-input',settings.sheetsUrl||'');sv('sheets-key-input',settings.sheetsKey||'');
+  sv('pref-tone',settings.tone||'');document.getElementById('pref-source').value=settings.defaultSource||'';document.getElementById('pref-costtype').value=settings.defaultCostType||'';
+  updateDots();openModal('settings-modal');
+}
+function saveSettings(){
+  settings.apiKey=gv('api-key-input').trim();settings.sheetsUrl=gv('sheets-url-input').trim();settings.sheetsKey=gv('sheets-key-input').trim();
+  settings.tone=gv('pref-tone').trim();settings.defaultSource=document.getElementById('pref-source').value;settings.defaultCostType=document.getElementById('pref-costtype').value;
+  localStorage.setItem('fliptrack_settings',JSON.stringify(settings));updateDots();closeModal('settings-modal');showToast('✅ Settings saved!');
+}
+function updateDots(){
+  document.getElementById('api-dot').className='api-dot '+(settings.apiKey?'ok':'missing');
+  document.getElementById('sheets-dot').className='sheets-dot '+(settings.sheetsUrl?'ok':'missing');
+  document.getElementById('sheetkey-dot').className='api-dot '+(settings.sheetsKey?'ok':'missing');
+}
+
+function showToast(msg){
+  var t=document.createElement('div');t.textContent=msg;
+  Object.assign(t.style,{position:'fixed',bottom:'calc(var(--bot-h) + 16px)',left:'50%',transform:'translateX(-50%)',background:'#222',color:'#fff',padding:'10px 20px',borderRadius:'99px',fontSize:'.85rem',fontWeight:'600',zIndex:'999',whiteSpace:'nowrap',boxShadow:'0 4px 16px rgba(0,0,0,.5)',transition:'opacity .3s'});
+  document.body.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},350);},2200);
+}
+
+function setAIOverlay(icon,title,sub){document.getElementById('ai-icon').textContent=icon;document.getElementById('ai-title').textContent=title;document.getElementById('ai-sub').textContent=sub;}
+function showAI(icon,title,sub){aiCancelled=false;setAIOverlay(icon,title,sub);document.getElementById('ai-overlay').classList.add('open');}
+function hideAI(){document.getElementById('ai-overlay').classList.remove('open');}
+function cancelAI(){aiCancelled=true;hideAI();showToast('Cancelled.');}
+
+function handlePhotoSelect(e){var f=e.target.files[0];e.target.value='';if(f)loadPhoto(f);}
+function loadPhoto(file){
+  currentPhotoMime=file.type||'image/jpeg';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var url=e.target.result;currentPhotoBase64=url.split(',')[1];
+    document.getElementById('photo-thumb').src=url;
+    document.getElementById('photo-thumb-area').style.display='block';
+    document.getElementById('photo-btn-area').style.display='none';
+    identifyAndGenerate();
+  };
+  reader.onerror=function(){showToast('Could not read photo. Try again.');};
+  reader.readAsDataURL(file);
+}
+function removePhoto(){
+  currentPhotoBase64=null;currentPhotoMime='image/jpeg';
+  document.getElementById('photo-thumb').src='';
+  document.getElementById('photo-thumb-area').style.display='none';
+  document.getElementById('photo-btn-area').style.display='flex';
+}
+
+async function callClaude(messages,systemPrompt,maxTok){
+  if(!settings.apiKey){showToast('⚠️ Add API key in ⚙️ Settings');return null;}
+  try{
+    var body={model:'claude-sonnet-4-20250514',max_tokens:maxTok||1500,messages:messages};
+    if(systemPrompt)body.system=systemPrompt;
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':settings.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
+    if(!resp.ok){var er=await resp.json();if(!aiCancelled)showToast('API Error: '+(er.error&&er.error.message||resp.statusText));return null;}
+    var d=await resp.json();return d.content.map(function(b){return b.text||'';}).join('');
+  }catch(e){if(!aiCancelled)showToast('Network error: '+e.message);return null;}
+}
+
+async function sheetsRequest(payload){
+  if(!settings.sheetsUrl)return null;
+  if(settings.sheetsKey)payload.key=settings.sheetsKey;
+  try{var r=await fetch(settings.sheetsUrl,{method:'POST',body:JSON.stringify(payload)});return await r.json();}
+  catch(e){return{error:e.message};}
+}
+async function loadFromSheets(){
+  if(!settings.sheetsUrl){setSyncStatus('⚠️ No Google Sheets URL in ⚙️ Settings','error');renderInventory();return;}
+  setSyncStatus('🔄 Loading...','');
+  var r=await sheetsRequest({action:'getAll'});
+  if(!r||r.error){setSyncStatus('❌ '+(r&&r.error||'Could not load'),'error');return;}
+  inventory=r.items||[];setSyncStatus('✅ Synced — '+inventory.length+' items','ok');renderInventory();
+}
+
+async function identifyAndGenerate(){
+  showAI('🔍','Identifying item...','Analyzing your photo for brand, model, condition, and resale details');
+  document.getElementById('details-card').style.display='none';
+  document.getElementById('listing-card').style.display='none';
+
+  var prompt='You are an expert resale buyer with deep knowledge of thrift, collectibles, electronics, clothing, toys, tools, and household goods.\n\nAnalyze this photo carefully. Respond ONLY in this exact JSON — no markdown, no extra text:\n{"name":"concise item name (brand + product if known)","brand":"brand or empty","model":"specific model/version/edition or empty","era":"year or decade or empty","features":"3-6 comma-separated key features","itemtype":"best match: '+ITEM_TYPES.join('|')+'","condition":"your honest assessment of visible condition","confidence":"high|medium|low","confidence_reason":"one sentence explaining your confidence level","notes":"2-3 sentences: exactly what this is, notable details, estimated eBay resale value range"}\n\nBe specific. Read brand logos carefully. Note model numbers. For clothing note size if visible.';
+
+  var result=await callClaude([{role:'user',content:[{type:'image',source:{type:'base64',media_type:currentPhotoMime,data:currentPhotoBase64}},{type:'text',text:prompt}]}]);
+  if(aiCancelled){hideAI();return;}
+  if(!result){hideAI();return;}
+
+  var p={};
+  try{p=JSON.parse(result.replace(/```json|```/g,'').trim());}
+  catch(e){p={name:'',brand:'',model:'',era:'',features:'',itemtype:'',condition:'',confidence:'low',confidence_reason:'Could not parse response',notes:result};}
+
+  sv('f-name',p.name||'');sv('f-brand',p.brand||'');sv('f-model',p.model||'');sv('f-era',p.era||'');
+  sv('f-features',p.features||'');sv('f-airaw',p.notes||'');
+  document.getElementById('f-itemtype').value=p.itemtype||'';
+  sv('f-notes','');sv('f-cost','');sv('f-listprice','');
+  setCheckbox('f-lot','f-lot-wrap',false);
+
+  // Auto-set condition from AI
+  var condMap={'new with tags':'New with tags (NWT)','new without':'New without tags (NWOT)','like new':'Like new / Open box','open box':'Like new / Open box','very good':'Very good – minor wear','good':'Good – moderate wear','acceptable':'Acceptable – heavy wear','for parts':'For parts / not working','not working':'For parts / not working'};
+  var cl=(p.condition||'').toLowerCase();var mc='';
+  Object.keys(condMap).forEach(function(k){if(cl.includes(k))mc=condMap[k];});
+  document.getElementById('f-condition').value=mc;
+
+  // Apply saved defaults
+  if(settings.defaultSource)document.getElementById('f-source').value=settings.defaultSource;
+  else document.getElementById('f-source').value='';
+  if(settings.defaultCostType)document.getElementById('f-costtype').value=settings.defaultCostType;
+  else document.getElementById('f-costtype').value='';
+
+  // Confidence indicator
+  var conf=p.confidence||'medium';
+  var confLabels={high:'AI is confident in this identification',medium:'AI is fairly confident — double check',low:'⚠️ AI is unsure — review carefully'};
+  var confClasses={high:'conf-high',medium:'conf-medium',low:'conf-low'};
+  document.getElementById('conf-row').className='conf-row '+confClasses[conf];
+  document.getElementById('conf-title').textContent=confLabels[conf];
+  document.getElementById('conf-sub').textContent=p.confidence_reason||'Review and correct fields below.';
+  document.getElementById('details-card').style.display='block';
+
+  setAIOverlay('✍️','Writing your listing...','Creating eBay title, description, and pricing suggestion');
+  await generateListing(true);
+  hideAI();
+  setTimeout(function(){document.getElementById('details-card').scrollIntoView({behavior:'smooth',block:'start'});},100);
+}
+
+async function generateListing(auto){
+  var name=gv('f-name').trim();
+  if(!name){if(!auto)showToast('Please enter the item description.');return;}
+  var brand=gv('f-brand').trim(),model=gv('f-model').trim(),era=gv('f-era').trim(),features=gv('f-features').trim();
+  var aiNotes=gv('f-airaw').trim(),condition=gv('f-condition'),notes=gv('f-notes').trim(),cost=gv('f-cost');
+  var extraPrefs=settings.tone?'\nSeller preferences: '+settings.tone:'';
+
+  if(!auto){
+    var gb=document.getElementById('gen-btn');gb.disabled=true;gb.innerHTML='<span class="spinner"></span> Generating...';
+    showAI('✍️','Writing your listing...','Creating eBay title, description, and pricing suggestion');
+  }
+  document.getElementById('listing-card').style.display='none';
+
+  var sys='You are an expert eBay listing writer for "AA Thrift & More" (aathriftandmore). Write in this seller\'s style: emoji section headers, bullet points for specs, friendly knowledgeable tone, honest specific condition reporting. Never say "great condition" without specifics.\n\nALWAYS end every description with this EXACT footer:\n\n🛡️ AATAM Quality Commitment\n• Fast Shipping: Secured packaging for safe transit.\n• Honest Listings: We take pride in accurately describing every item we sell.\n• WYSIWYG: You will receive the exact item pictured.\n\n🛒 Click \'Buy It Now\' to add this to your collection — and hope you have an amazing day! Thanks for stopping by. 😊';
+
+  var up='Write a complete eBay listing.\n\nItem: '+name+'\nBrand: '+(brand||'Unknown')+'\nModel/Version: '+(model||'N/A')+'\nEra/Year: '+(era||'Unknown')+'\nKey Features: '+(features||'N/A')+'\nAI Notes: '+(aiNotes||'N/A')+'\nCondition: '+(condition||'Not specified')+'\nExtra Notes: '+(notes||'None')+'\nCost Paid: '+(cost?'$'+cost:'Not specified')+extraPrefs+'\n\nRespond in EXACTLY this format:\n\nTITLE:\n[Max 80 chars. Brand + Model + key detail + condition keyword. Capitalize each word. Most searchable keywords first. No ALL CAPS.]\n\nDESCRIPTION:\n[1-sentence hook. Then emoji headers with bullets covering: what it is, key specs, honest condition details, what\'s included. End with EXACT footer.]\n\nPRICING:\n[2-3 sentences: realistic price range based on condition, exact search phrase for eBay sold comps, one buyer tip]';
+
+  var content=currentPhotoBase64
+    ?[{type:'image',source:{type:'base64',media_type:currentPhotoMime,data:currentPhotoBase64}},{type:'text',text:up}]
+    :up;
+  var result=await callClaude([{role:'user',content:content}],sys,2000);
+
+  if(!auto){document.getElementById('gen-btn').disabled=false;document.getElementById('gen-btn').innerHTML='✨ Generate My Listing';hideAI();}
+  if(aiCancelled)return;
+
+  if(result){
+    function get(lbl){var m=result.match(new RegExp(lbl+':\\s*([\\s\\S]*?)(?=\\n[A-Z]+:|$)','i'));return m?m[1].trim():'';}
+    currentListing={name:name,brand:brand,model:model,condition:condition,cost:parseFloat(cost)||0,title:get('TITLE'),description:get('DESCRIPTION'),pricing:get('PRICING'),itemtype:document.getElementById('f-itemtype').value,source:document.getElementById('f-source').value,costtype:document.getElementById('f-costtype').value,lot:document.getElementById('f-lot').checked,dateacquired:gv('f-dateacquired'),listprice:gv('f-listprice')};
+    document.getElementById('out-title').textContent=currentListing.title;
+    sv('out-desc',currentListing.description);
+    document.getElementById('out-price').textContent=currentListing.pricing;
+    // eBay sold search link
+    var q=encodeURIComponent([brand,model,name].filter(Boolean).join(' ').replace(/\s+/g,' ').trim());
+    document.getElementById('ebay-search-link').href='https://www.ebay.com/sch/i.html?_nkw='+q+'&LH_Sold=1&LH_Complete=1';
+    document.getElementById('ebay-search-label').textContent='Search: "'+(brand+' '+(model||name)).trim()+'"';
+    document.getElementById('listing-card').style.display='block';
+    if(!auto)setTimeout(function(){document.getElementById('listing-card').scrollIntoView({behavior:'smooth',block:'start'});},100);
+  }
+}
+
+async function saveToInventory(){
+  if(!currentListing)return;
+  if(!settings.sheetsUrl){showToast('⚠️ Add Google Sheets URL in ⚙️ Settings');return;}
+  currentListing.description=gv('out-desc');currentListing.title=document.getElementById('out-title').textContent;
+  var listDate=currentListing.listprice?new Date().toLocaleDateString('en-US'):'';
+  var item={'Item Number':'','Item Type':currentListing.itemtype||'','Item Description':currentListing.title||currentListing.name,'Status':'Unlisted','Lot':currentListing.lot?'TRUE':'FALSE','Date Acquired':currentListing.dateacquired||'','Sourced From':currentListing.source||'','Cost Type':currentListing.costtype||'','Cost Basis':currentListing.cost||'','Starting List Date':listDate,'Starting List Price':currentListing.listprice||'','Current List Price':currentListing.listprice||'','Platform':'eBay','Sold Date':'','Order Number':'','Subtotal':'','Shipping Cost Charged':'','Shipping Cost Actual':'','Buyers Tax':'','Shipping Service':'','Tracking Number':'','Notes':''};
+  var btn=document.querySelector('#listing-card .btn-success');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Saving...';
+  var r=await sheetsRequest({action:'save',item:item});
+  if(r&&r.success){showToast('✅ Saved to Google Sheets!');clearAll();}
+  else showToast('❌ Error: '+(r&&r.error||'unknown'));
+  btn.disabled=false;btn.innerHTML='💾 Save to Inventory';
+}
+
+function clearAll(){
+  removePhoto();
+  ['f-name','f-brand','f-model','f-era','f-features','f-airaw','f-notes','f-cost','f-dateacquired','f-listprice'].forEach(function(id){sv(id,'');});
+  ['f-condition','f-itemtype','f-source','f-costtype'].forEach(function(id){document.getElementById(id).value='';});
+  setCheckbox('f-lot','f-lot-wrap',false);
+  document.getElementById('details-card').style.display='none';document.getElementById('listing-card').style.display='none';
+  currentListing=null;document.getElementById('scroll-area').scrollTop=0;
+}
+
+function copyDesc(btn){var t=gv('out-desc');navigator.clipboard.writeText(t).then(function(){btn.textContent='✅ Copied!';setTimeout(function(){btn.textContent='📋 Copy';},1500);}).catch(function(){var ta=document.getElementById('out-desc');ta.select();document.execCommand('copy');btn.textContent='✅ Copied!';setTimeout(function(){btn.textContent='📋 Copy';},1500);});}
+function copyField(id,btn){var t=document.getElementById(id).textContent;navigator.clipboard.writeText(t).then(function(){btn.textContent='✅ Copied!';setTimeout(function(){btn.textContent='📋 Copy';},1500);}).catch(function(){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='✅ Copied!';setTimeout(function(){btn.textContent='📋 Copy';},1500);});}
+
+function setSyncStatus(msg,type){var el=document.getElementById('sync-status');el.textContent=msg;el.className='sync-status'+(type?' '+type:'');}
+function updateStats(){
+  var u=inventory.filter(function(i){return i['Status']==='Unlisted';}).length;
+  var l=inventory.filter(function(i){return i['Status']==='Listed';}).length;
+  var s=inventory.filter(function(i){return i['Status']==='Sold';}).length;
+  var pr=inventory.filter(function(i){return i['Status']==='Sold';}).reduce(function(a,i){return a+(parseFloat(i['Profit'])||0);},0);
+  sv('stat-unlisted',u);sv('stat-listed',l);sv('stat-sold',s);sv('stat-profit','$'+pr.toFixed(2));
+}
+function renderInventory(){
+  var search=gv('search-inv').toLowerCase(),fs=document.getElementById('filter-status').value,ft=document.getElementById('filter-type').value;
+  updateStats();
+  var items=inventory.filter(function(i){return(!search||String(i['Item Description']||'').toLowerCase().includes(search))&&(!fs||i['Status']===fs)&&(!ft||i['Item Type']===ft);});
+  var listEl=document.getElementById('inv-list'),empty=document.getElementById('inv-empty');
+  if(!items.length){listEl.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  listEl.innerHTML=items.map(function(item){
+    var cost=parseFloat(item['Cost Basis'])||0,profit=parseFloat(item['Profit'])||0;
+    var hasProfit=item['Status']==='Sold'&&item['Profit']!=='';
+    var ph=hasProfit?'<span class="m-val '+(profit>=0?'profit-pos':'profit-neg')+'">$'+profit.toFixed(2)+'</span>':'<span class="m-val" style="color:var(--muted)">—</span>';
+    var sc='badge-'+String(item['Status']||'unlisted').toLowerCase();
+    var lp=item['Current List Price']||item['Starting List Price']||'';
+    var lb=item['Lot']==='TRUE'?'<span class="lot-badge">LOT</span> ':'';
+    var ty=item['Item Type']?'<span>'+escHtml(item['Item Type'])+'</span>':'';
+    var isSold=item['Status']==='Sold',isUnlisted=item['Status']==='Unlisted';
+    var desc=escAttr(item['Item Description']||'');
+    var qa='<div class="quick-actions">';
+    if(isUnlisted)qa+='<button class="qa-btn qa-listed" onclick="event.stopPropagation();quickStatus(\''+desc+'\',\'Listed\')">📋 Listed</button>';
+    if(!isSold)qa+='<button class="qa-btn qa-sold" onclick="event.stopPropagation();openSoldModal(\''+desc+'\')">💚 Sold</button>';
+    qa+='<button class="qa-btn qa-edit" onclick="event.stopPropagation();openEditModal(\''+desc+'\')">✏️</button></div>';
+    return '<div class="item-card"><div class="item-card-desc">'+lb+escHtml(item['Item Description']||'')+'</div>'
+      +'<div class="item-card-meta"><span class="badge '+sc+'">'+escHtml(item['Status']||'')+'</span>'+ty+'</div>'
+      +'<div class="item-card-bottom"><div class="item-money">'
+      +'<div class="money-item"><div class="m-val">'+(cost?'$'+cost.toFixed(2):'—')+'</div><div class="m-lbl">Cost</div></div>'
+      +'<div class="money-item"><div class="m-val">'+(lp?'$'+parseFloat(lp).toFixed(2):'—')+'</div><div class="m-lbl">List $</div></div>'
+      +'<div class="money-item">'+ph+'<div class="m-lbl">Profit</div></div>'
+      +'</div>'+qa+'</div></div>';
+  }).join('');
+}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escAttr(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+
+async function quickStatus(desc,newStatus){
+  var item=inventory.find(function(i){return i['Item Description']===desc;});if(!item)return;
+  var updated=Object.assign({},item,{'Status':newStatus});
+  if(newStatus==='Listed'&&!updated['Starting List Date'])updated['Starting List Date']=new Date().toLocaleDateString('en-US');
+  showToast('⏳ Updating...');
+  var r=await sheetsRequest({action:'update',item:updated});
+  if(r&&r.success){showToast('✅ Marked as '+newStatus+'!');await loadFromSheets();}
+  else showToast('❌ Error updating');
+}
+
+function openSoldModal(desc){
+  var item=inventory.find(function(i){return i['Item Description']===desc;});if(!item)return;
+  sv('sold-origdesc',desc);document.getElementById('sold-item-name').textContent=desc;
+  sv('sold-date',new Date().toISOString().split('T')[0]);
+  ['sold-ordernum','sold-subtotal','sold-shipchrg','sold-shipact','sold-fees','sold-tax','sold-tracking'].forEach(function(id){sv(id,'');});
+  document.getElementById('sold-shipservice').value='';document.getElementById('sold-platform').value='eBay';
+  sv('sold-calc-gross','');sv('sold-calc-profit','');
+  openModal('sold-modal');
+}
+async function saveSoldModal(){
+  var origDesc=gv('sold-origdesc');
+  var item=inventory.find(function(i){return i['Item Description']===origDesc;});if(!item)return;
+  var updated=Object.assign({},item,{'Status':'Sold','Sold Date':gv('sold-date'),'Order Number':gv('sold-ordernum'),'Subtotal':pf('sold-subtotal')||'','Shipping Cost Charged':pf('sold-shipchrg')||'','Shipping Cost Actual':pf('sold-shipact')||'','Fees':pf('sold-fees')||'','Buyers Tax':pf('sold-tax')||'','Shipping Service':document.getElementById('sold-shipservice').value,'Tracking Number':gv('sold-tracking'),'Platform':document.getElementById('sold-platform').value||item['Platform']||'eBay'});
+  var btn=document.getElementById('sold-save-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Saving...';
+  var r=await sheetsRequest({action:'update',item:updated});
+  if(r&&r.success){closeModal('sold-modal');showToast('✅ Sale recorded!');await loadFromSheets();}
+  else showToast('❌ Error: '+(r&&r.error||'unknown'));
+  btn.disabled=false;btn.innerHTML='✅ Save Sale';
+}
+
+function openAddModal(){
+  document.getElementById('edit-modal-title').textContent='➕ Add Item';sv('edit-origdesc','');
+  ['edit-desc','edit-itemnum','edit-ordernum','edit-tracking','edit-notes'].forEach(function(id){sv(id,'');});
+  ['edit-itemtype','edit-status','edit-source','edit-costtype','edit-platform','edit-shipservice'].forEach(function(id){document.getElementById(id).value='';});
+  ['edit-cost','edit-startlistprice','edit-currentprice','edit-subtotal','edit-shipchrg','edit-shipact','edit-tax','edit-fees','edit-dateacquired','edit-startlistdate','edit-solddate','calc-soldtotal','calc-gross','calc-profit'].forEach(function(id){sv(id,'');});
+  setCheckbox('edit-lot','edit-lot-wrap',false);openModal('edit-modal');
+}
+function openEditModal(desc){
+  var item=inventory.find(function(i){return i['Item Description']===desc;});if(!item)return;
+  document.getElementById('edit-modal-title').textContent='✏️ Edit Item';sv('edit-origdesc',desc);
+  sv('edit-desc',item['Item Description']||'');sv('edit-itemnum',item['Item Number']||'');
+  document.getElementById('edit-itemtype').value=item['Item Type']||'';document.getElementById('edit-status').value=item['Status']||'Unlisted';
+  document.getElementById('edit-platform').value=item['Platform']||'';sv('edit-dateacquired',item['Date Acquired']||'');
+  document.getElementById('edit-source').value=item['Sourced From']||'';document.getElementById('edit-costtype').value=item['Cost Type']||'';
+  sv('edit-cost',item['Cost Basis']||'');sv('edit-startlistdate',item['Starting List Date']||'');sv('edit-startlistprice',item['Starting List Price']||'');
+  sv('edit-currentprice',item['Current List Price']||'');sv('edit-solddate',item['Sold Date']||'');sv('edit-ordernum',item['Order Number']||'');
+  sv('edit-subtotal',item['Subtotal']||'');sv('edit-shipchrg',item['Shipping Cost Charged']||'');sv('edit-shipact',item['Shipping Cost Actual']||'');
+  sv('edit-tax',item['Buyers Tax']||'');sv('edit-fees',item['Fees']||'');
+  document.getElementById('edit-shipservice').value=item['Shipping Service']||'';sv('edit-tracking',item['Tracking Number']||'');sv('edit-notes',item['Notes']||'');
+  setCheckbox('edit-lot','edit-lot-wrap',item['Lot']);calcProfit();openModal('edit-modal');
+}
+async function saveEditModal(){
+  var origDesc=gv('edit-origdesc');
+  var item={'Item Description':gv('edit-desc'),'Item Number':gv('edit-itemnum'),'Item Type':document.getElementById('edit-itemtype').value,'Status':document.getElementById('edit-status').value,'Lot':document.getElementById('edit-lot').checked?'TRUE':'FALSE','Platform':document.getElementById('edit-platform').value,'Date Acquired':gv('edit-dateacquired'),'Sourced From':document.getElementById('edit-source').value,'Cost Type':document.getElementById('edit-costtype').value,'Cost Basis':pf('edit-cost')||'','Starting List Date':gv('edit-startlistdate'),'Starting List Price':gv('edit-startlistprice'),'Current List Price':gv('edit-currentprice'),'Sold Date':gv('edit-solddate'),'Order Number':gv('edit-ordernum'),'Subtotal':pf('edit-subtotal')||'','Shipping Cost Charged':pf('edit-shipchrg')||'','Shipping Cost Actual':pf('edit-shipact')||'','Buyers Tax':pf('edit-tax')||'','Fees':pf('edit-fees')||'','Shipping Service':document.getElementById('edit-shipservice').value,'Tracking Number':gv('edit-tracking'),'Notes':gv('edit-notes')};
+  var btn=document.getElementById('edit-save-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Saving...';
+  var r=await sheetsRequest({action:origDesc?'update':'save',item:item});
+  if(r&&r.success){closeModal('edit-modal');showToast('✅ Saved!');await loadFromSheets();}
+  else showToast('❌ Error: '+(r&&r.error||'unknown'));
+  btn.disabled=false;btn.innerHTML='Save to Sheet';
+}
+
+updateDots();
+</script>
+</body>
+</html>
