@@ -235,7 +235,7 @@ select option{background:#1c1c1e}
       <text x="100" y="136" font-family="Georgia,'Times New Roman',serif" font-size="11" font-weight="700" fill="#b8902a" text-anchor="middle" letter-spacing="5">THRIFT</text>
       <text x="100" y="150" font-family="Georgia,'Times New Roman',serif" font-size="8.5" fill="#777" text-anchor="middle" letter-spacing="3">&amp; MORE</text>
     </svg>
-    <div><div class="nav-brand-name">FlipTrack</div><div class="nav-brand-sub">AA Thrift &amp; More</div></div>
+    <div><div class="nav-brand-name">FlipTrack <span style="font-size:.65rem;color:var(--muted);font-weight:400">v1.0.0</span></div><div class="nav-brand-sub">AA Thrift &amp; More</div></div>
   </div>
   <button class="settings-btn" onclick="openSettings()">⚙️</button>
 </nav>
@@ -268,7 +268,7 @@ select option{background:#1c1c1e}
       <div class="conf-dot"></div>
       <div class="conf-text"><strong id="conf-title">AI identified this item</strong><span id="conf-sub">Review fields below and correct anything wrong.</span></div>
     </div>
-    <div class="edit-hint">✏️ The more accurate these fields are, the better your listing will be. Fix anything the AI got wrong before generating.</div>
+    <div class="edit-hint">✏️ Review what the AI found below. Fix anything that looks wrong, then tap <strong>Generate My Listing</strong> when you're ready.</div>
 
     <div class="section-lbl">Item Info</div>
     <label>Item Description (eBay Title)</label>
@@ -297,7 +297,7 @@ select option{background:#1c1c1e}
     <label>Additional Notes</label>
     <textarea id="f-notes" style="min-height:56px;font-size:14px" placeholder="e.g. includes original box, tested and working"></textarea>
     <div class="btn-row">
-      <button class="btn btn-primary btn-full" id="gen-btn" onclick="generateListing(false)">✨ Generate My Listing</button>
+      <button class="btn btn-primary btn-full" id="gen-btn" onclick="generateListing(false)" style="font-size:1rem;padding:16px;letter-spacing:.3px">✨ Looks Good — Generate My Listing</button>
       <button class="btn btn-secondary btn-full" onclick="clearAll()">🗑️ Start Over</button>
     </div>
   </div>
@@ -658,8 +658,6 @@ async function identifyAndGenerate(){
   document.getElementById('conf-sub').textContent=p.confidence_reason||'Review and correct fields below.';
   document.getElementById('details-card').style.display='block';
 
-  setAIOverlay('✍️','Writing your listing...','Creating eBay title, description, and pricing suggestion');
-  await generateListing(true);
   hideAI();
   setTimeout(function(){document.getElementById('details-card').scrollIntoView({behavior:'smooth',block:'start'});},100);
 }
